@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<!-- 配置生成器 -->
+<generatorConfiguration>
+  <!-- 引入配置文件 -->
+  <properties resource="application.properties"/>
+
+  <context id="DB2Tables" targetRuntime="MyBatis3">
+	  <commentGenerator>
+	  <property name="suppressAllComments" value="true" />
+	</commentGenerator>
+  <!-- 配置数据库连接 -->
+    <jdbcConnection driverClass="${spring.datasource.driver-class-name}"
+        connectionURL="${spring.datasource.url}"
+        userId="${spring.datasource.username}"
+        password="${spring.datasource.password}">
+    </jdbcConnection>
+
+    <javaTypeResolver >
+      <property name="forceBigDecimals" value="false" />
+    </javaTypeResolver>
+<!-- 制定Javabean生成的位置 -->
+    <javaModelGenerator targetPackage="com.howei.shiroadmin.model" targetProject=".\src\main\java">
+      <property name="enableSubPackages" value="true" />
+      <property name="trimStrings" value="true" />
+    </javaModelGenerator>
+<!-- 制定sql映射文件生成的位置 -->
+    <sqlMapGenerator targetPackage="mapper"  targetProject=".\src\main\resources">
+      <property name="enableSubPackages" value="true" />
+    </sqlMapGenerator>
+<!-- 指定dao接口与生成的位置 mapper接口 -->
+    <javaClientGenerator type="XMLMAPPER"
+	targetPackage="com.howei.shiroadmin.dao" targetProject=".\src\main\java">
+      <property name="enableSubPackages" value="true" />
+    </javaClientGenerator>
+<!-- 指定每个表的生成策略 -->
+
+ <table tableName="user" domainObjectName="User"></table>
+  <table tableName="user_role" domainObjectName="UserRole"></table>
+  <table tableName="role" domainObjectName="Role"></table>
+  <table tableName="role_permission" domainObjectName="RolePermission"></table>
+  <table tableName="permission" domainObjectName="Permission"></table>
+  </context>
+</generatorConfiguration>
