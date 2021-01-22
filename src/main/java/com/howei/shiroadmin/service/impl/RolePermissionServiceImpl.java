@@ -1,6 +1,7 @@
 package com.howei.shiroadmin.service.impl;
 
 import com.howei.shiroadmin.dao.RolePermissionMapper;
+import com.howei.shiroadmin.model.RolePermission;
 import com.howei.shiroadmin.service.RolePermissionService;
 import com.howei.shiroadmin.service.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,4 +13,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
     @Autowired(required = false)
     private RolePermissionMapper mapper;
+
+    @Override
+    public int insert(RolePermission rolePermission) {
+        return mapper.insertSelective(rolePermission);
+    }
 }

@@ -1,6 +1,8 @@
 package com.howei.shiroadmin.model;
 
-public class User {
+import java.io.Serializable;
+
+public class User implements Serializable {
     @Override
     public String toString() {
         return "User{" +

@@ -26,12 +26,12 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String loginForm(Model model, HttpServletRequest request, String username, String password, HttpSession session) {
+    public String loginForm(Model model, HttpServletRequest request, String username, boolean rememberMe,String password, HttpSession session) {
 
         //对密码进行加密
         //password=new SimpleHash("md5", password, ByteSource.Util.bytes(username.toLowerCase() + "shiro"),2).toHex();
 
-        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password);
+        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password,rememberMe);
         Subject subject = SecurityUtils.getSubject();
         try {
             subject.login(usernamePasswordToken);
@@ -43,7 +43,6 @@ public class LoginController {
             //登录失败从request中获取shiro处理的异常信息 shiroLoginFailure:就是shiro异常类的全类名
             String exception = (String) request.getAttribute("shiroLoginFailure");
             model.addAttribute("msg", e.getMessage());
-
             return "login";
         }
 
@@ -69,10 +68,6 @@ public class LoginController {
         return "login";
     }
 
-    @GetMapping("/unauthorized")
-    public String unauthorized() {
-        return "unauthorized";
-    }
 
 
 }

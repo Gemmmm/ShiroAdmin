@@ -1,4 +1,4 @@
-package com.howei.shiroadmin.config;
+package com.howei.shiroadmin.config.shiro;
 
 import com.howei.shiroadmin.model.Permission;
 import com.howei.shiroadmin.model.Role;
@@ -21,7 +21,7 @@ import java.util.List;
  * 在shiro中，最终通过Realm来获取应用程序中的用户、角色以及权限信息的
  * 在Realm中会直接从我们的数据源中获取市容需要额验证信息，可以说Realm是专用于安全框架的Dao
  */
-public class ShiroReam extends AuthorizingRealm {
+public class ShiroRealm extends AuthorizingRealm {
 
     @Autowired
     private UserService userService;
@@ -101,5 +101,53 @@ public class ShiroReam extends AuthorizingRealm {
             }
         }
         return authorizationInfo;
+    }
+
+
+    /**
+     * 清除当前用户的授权缓存
+     *
+     * @param principals
+     */
+    @Override
+    protected void clearCachedAuthorizationInfo(PrincipalCollection principals) {
+        super.clearCachedAuthorizationInfo(principals);
+    }
+
+    /**
+     * 重写方法，清除当前用户的 认证缓存
+     *
+     * @param principals
+     */
+    @Override
+    protected void clearCachedAuthenticationInfo(PrincipalCollection principals) {
+        super.clearCachedAuthenticationInfo(principals);
+    }
+
+    @Override
+    protected void clearCache(PrincipalCollection principals) {
+        super.clearCache(principals);
+    }
+
+    /**
+     * 自定义方法：清除所有 授权缓存
+     */
+    public void clearAllCachedAuthorizationInfo() {
+        getAuthorizationCache().clear();
+    }
+
+    /**
+     * 自定义方法：清除所有 认证缓存
+     */
+    public void clearAllCachedAuthenticationInfo() {
+        getAuthenticationCache().clear();
+    }
+
+    /**
+     * 自定义方法：清除所有的  认证缓存  和 授权缓存
+     */
+    public void clearAllCache() {
+        clearAllCachedAuthenticationInfo();
+        clearAllCachedAuthorizationInfo();
     }
 }
