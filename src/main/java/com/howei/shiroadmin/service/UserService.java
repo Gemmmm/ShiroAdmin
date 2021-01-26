@@ -12,4 +12,8 @@ public interface UserService {
     int delete(Integer id);
 
     List<User> getAll();
+
+    User getByUsername(String username);
+
+    int update(User user);
 }

@@ -44,13 +44,13 @@ public class ShiroRealm extends AuthorizingRealm {
         UsernamePasswordToken usernamePasswordToken = (UsernamePasswordToken) authenticationToken;
         String username = usernamePasswordToken.getUsername();
         String password = new String(usernamePasswordToken.getPassword());
-        User user = userService.getByUsernameAndPassword(username, password);
+        User user = userService.getByUsername(username);
         if (user == null) {
             throw new UnknownAccountException("no_user");
         }
-        if (!password.equals(user.getPassword())) {
-            throw new IncorrectCredentialsException("error_password");
-        }
+//        if (!password.equals(user.getPassword())) {
+//            throw new IncorrectCredentialsException("error_password");
+//        }
 
         if ("1".equals(user.getState())) {
             throw new LockedAccountException("lock_account");

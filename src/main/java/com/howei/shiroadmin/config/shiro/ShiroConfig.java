@@ -51,15 +51,15 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setSecurityManager(securityManager);
 
         //这里的/login是后台的接口，不是页面，如果不设置 会自动寻找Web工程目录下的 “/login”页面
-        shiroFilterFactoryBean.setLoginUrl("/login");
+        shiroFilterFactoryBean.setLoginUrl("/");
         //登录成功之后的跳转连接
         shiroFilterFactoryBean.setSuccessUrl("/index");
 
         //未授权页面
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized");
 
-        LinkedHashMap<String, Filter> filtersMap=new LinkedHashMap<>();
-        filtersMap.put("kickout",kickoutSessionControlFilter());
+        LinkedHashMap<String, Filter> filtersMap = new LinkedHashMap<>();
+        filtersMap.put("kickout", kickoutSessionControlFilter());
         shiroFilterFactoryBean.setFilters(filtersMap);
 
 
@@ -132,6 +132,8 @@ public class ShiroConfig {
         shiroRealm.setAuthorizationCachingEnabled(true);
         //authorizationInfo ,在ehcache-shiro.xml中有对应的缓存的配置
         shiroRealm.setAuthorizationCacheName("authorizationCache");
+        //配置自定义密码比较器
+        shiroRealm.setCredentialsMatcher(retryLimitHashedCredentialsMatcher());
         return shiroRealm;
     }
 
@@ -367,7 +369,7 @@ public class ShiroConfig {
     @Bean
     public KickoutSessionControlFilter kickoutSessionControlFilter() {
 
-        KickoutSessionControlFilter kickoutSessionControlFilter=new KickoutSessionControlFilter();
+        KickoutSessionControlFilter kickoutSessionControlFilter = new KickoutSessionControlFilter();
         //用于根据会话Id获取会话进行踢出操作
         kickoutSessionControlFilter.setSessionManager(sessionManager());
         //使用cacheManager获取相应的cache来缓存用户登录的会话,用于保存用户-会话之间的关系
@@ -380,4 +382,23 @@ public class ShiroConfig {
         kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
         return kickoutSessionControlFilter;
     }
+
+    /**
+     * 密码比较器
+     * @return
+     */
+    @Bean
+    public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
+        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
+
+        //如果密码加密,可以打开下面配置
+        //加密算法的名称
+        //retryLimitHashedCredentialsMatcher.setHashAlgorithmName("MD5");
+        //配置加密的次数
+        //retryLimitHashedCredentialsMatcher.setHashIterations(1024);
+        //是否存储为16进制
+        //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
+        return retryLimitHashedCredentialsMatcher;
+    }
+
 }

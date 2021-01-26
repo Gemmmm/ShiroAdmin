@@ -42,4 +42,21 @@ public class UserServiceImpl implements UserService {
     public List<User> getAll() {
         return mapper.selectByExample(null);
     }
+
+    @Override
+    public User getByUsername(String username) {
+        UserExample example = new UserExample();
+        Criteria criteria = example.createCriteria();
+        criteria.andUsernameEqualTo(username);
+        List<User> list = mapper.selectByExample(example);
+        if (list != null && list.size() > 0) {
+            return list.get(0);
+        }
+        return null;
+    }
+
+    @Override
+    public int update(User user) {
+        return mapper.updateByPrimaryKeySelective(user);
+    }
 }

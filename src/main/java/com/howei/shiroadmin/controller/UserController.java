@@ -1,5 +1,6 @@
 package com.howei.shiroadmin.controller;
 
+import com.howei.shiroadmin.config.shiro.RetryLimitHashedCredentialsMatcher;
 import com.howei.shiroadmin.config.shiro.ShiroRealm;
 import com.howei.shiroadmin.model.RolePermission;
 import com.howei.shiroadmin.model.User;
@@ -12,6 +13,7 @@ import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -72,7 +74,7 @@ public class UserController {
     }
 
     /**
-     *
+     * 添加权限
      */
     @GetMapping("/addPermission")
     public String addPermission() {
@@ -88,5 +90,7 @@ public class UserController {
         //shiroRealm.getAuthorizationCache().remove(SecurityUtils.getSubject().getPrincipals());
         return "给admin用户添加 userInfo:del 权限成功";
     }
+
+
 
 }
