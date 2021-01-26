@@ -18,4 +18,15 @@
     <input type="submit" value="提交"/>
 </form>
 </body>
+<script>
+
+    function kickout() {
+        var href = location.href;
+        if (href.indexOf("kickout") > 0) {
+            alert("你的账号在另外一台设备上登录")
+        }
+    }
+
+    window.onload = kickout();
+</script>
 </html>

@@ -28,10 +28,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Properties;
+import javax.servlet.Filter;
+import java.util.*;
 
 @Configuration
 public class ShiroConfig {
@@ -60,9 +58,14 @@ public class ShiroConfig {
         //未授权页面
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized");
 
+        LinkedHashMap<String, Filter> filtersMap=new LinkedHashMap<>();
+        filtersMap.put("kickout",kickoutSessionControlFilter());
+        shiroFilterFactoryBean.setFilters(filtersMap);
+
+
         LinkedHashMap<String, String> filterLinkedHashMap = new LinkedHashMap<>();
         //配置不登陆就可以访问的资源， anon表示资源都可以匿名访问
-        filterLinkedHashMap.put("/login", "anon");
+        filterLinkedHashMap.put("/login", "kickout,anon");
         filterLinkedHashMap.put("/", "anon");
         filterLinkedHashMap.put("/css/**", "anon");
         filterLinkedHashMap.put("/js/**", "anon");
@@ -75,7 +78,7 @@ public class ShiroConfig {
         //filterLinkedHashMap.put("/user/del", "\"perms[\"userInfo:del\"]")
 
         //其他资源需要认证， auth 表示需要认证才能访问
-        filterLinkedHashMap.put("/**", "user");
+        filterLinkedHashMap.put("/**", "kickout,user");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterLinkedHashMap);
         return shiroFilterFactoryBean;
@@ -359,5 +362,22 @@ public class ShiroConfig {
         sessionManager.setSessionIdUrlRewritingEnabled(false);
         return sessionManager;
     }
+    //并发登录控制
 
+    @Bean
+    public KickoutSessionControlFilter kickoutSessionControlFilter() {
+
+        KickoutSessionControlFilter kickoutSessionControlFilter=new KickoutSessionControlFilter();
+        //用于根据会话Id获取会话进行踢出操作
+        kickoutSessionControlFilter.setSessionManager(sessionManager());
+        //使用cacheManager获取相应的cache来缓存用户登录的会话,用于保存用户-会话之间的关系
+        kickoutSessionControlFilter.setCacheManager(ehCacheManager());
+        //时候踢出后来的登录的用户,默认为false
+        kickoutSessionControlFilter.setKickoutAfter(false);
+        //同一个用户的最大会话数,
+        kickoutSessionControlFilter.setMaxSession(1);
+        //被踢出之后的重定向地址
+        kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
+        return kickoutSessionControlFilter;
+    }
 }
