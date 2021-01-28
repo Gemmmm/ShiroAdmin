@@ -30,20 +30,30 @@ public class LoginController {
     @Autowired
     private RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher;
 
+
+
+
+
     @GetMapping("/login")
     public String loginPage() {
         return "login";
     }
 
     @PostMapping("/login")
-    public String loginForm(Model model, HttpServletRequest request, String username, boolean rememberMe, String password, HttpSession session) {
+    public String loginForm(Model model, HttpServletRequest request, String username, boolean rememberMe, String password,String captcha,  HttpSession session) {
 
         //对密码进行加密
         //password=new SimpleHash("md5", password, ByteSource.Util.bytes(username.toLowerCase() + "shiro"),2).toHex();
 
-
-        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password, rememberMe);
         Subject subject = SecurityUtils.getSubject();
+        String sessionCaptcha= (String) subject.getSession().getAttribute(CaptchaController.KEY_CAPTCHA);
+
+        if(captcha==null||"".equals(captcha)||!captcha.equalsIgnoreCase(sessionCaptcha)){
+            model.addAttribute("msg","验证码错误！");
+            return "login";
+        }
+        UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password, rememberMe);
+
         try {
             subject.login(usernamePasswordToken);
             User user = (User) subject.getPrincipal();
@@ -99,5 +109,7 @@ public class LoginController {
         log.info("解锁成功");
         return "login";
     }
+
+
 
 }

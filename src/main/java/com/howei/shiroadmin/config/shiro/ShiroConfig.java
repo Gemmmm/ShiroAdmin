@@ -67,11 +67,14 @@ public class ShiroConfig {
         //配置不登陆就可以访问的资源， anon表示资源都可以匿名访问
         filterLinkedHashMap.put("/login", "kickout,anon");
         filterLinkedHashMap.put("/", "anon");
-        filterLinkedHashMap.put("/css/**", "anon");
-        filterLinkedHashMap.put("/js/**", "anon");
-        filterLinkedHashMap.put("/img/**", "anon");
+        filterLinkedHashMap.put("/public/css/**", "anon");
+        filterLinkedHashMap.put("/public/js/**", "anon");
+        filterLinkedHashMap.put("/public/img/**", "anon");
         filterLinkedHashMap.put("/druid/**", "anon");
         filterLinkedHashMap.put("/favicon.ico", "anon");
+
+        filterLinkedHashMap.put("/Captcha.jpg","anon");
+
 
         filterLinkedHashMap.put("/logout", "logout");
         //此时访问/userInfo/del需要del权限,在自定义Realm中为用户授权。
