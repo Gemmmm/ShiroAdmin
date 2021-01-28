@@ -68,7 +68,6 @@ public class RetryLimitHashedCredentialsMatcher extends SimpleCredentialsMatcher
      */
     public void unlockAccount(String username) {
         User user = userService.getByUsername(username);
-        log.info("retryLimithashed:user:" + user);
         if (user != null) {
             user.setState("0");
             userService.update(user);

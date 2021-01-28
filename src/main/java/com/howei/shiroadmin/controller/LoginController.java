@@ -26,9 +26,9 @@ import javax.servlet.http.HttpSession;
 @RequestMapping("/")
 @Slf4j
 public class LoginController {
-
-    @Autowired
-    private RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher;
+//
+//    @Autowired
+//    private RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher;
 
 
 
@@ -104,7 +104,7 @@ public class LoginController {
         if(username==null||"".equals(username)){
             username="admin";
         }
-        retryLimitHashedCredentialsMatcher.unlockAccount(username);
+        //retryLimitHashedCredentialsMatcher.unlockAccount(username);
         model.addAttribute("msg", username+"用户解锁成功");
         log.info("解锁成功");
         return "login";

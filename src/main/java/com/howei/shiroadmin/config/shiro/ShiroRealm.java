@@ -6,6 +6,7 @@ import com.howei.shiroadmin.model.User;
 import com.howei.shiroadmin.service.PermissionService;
 import com.howei.shiroadmin.service.RoleService;
 import com.howei.shiroadmin.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
@@ -21,6 +22,7 @@ import java.util.List;
  * 在shiro中，最终通过Realm来获取应用程序中的用户、角色以及权限信息的
  * 在Realm中会直接从我们的数据源中获取市容需要额验证信息，可以说Realm是专用于安全框架的Dao
  */
+@Slf4j
 public class ShiroRealm extends AuthorizingRealm {
 
     @Autowired
@@ -86,7 +88,7 @@ public class ShiroRealm extends AuthorizingRealm {
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principalCollection) {
-
+        log.info("开始查询权限");
         User user = (User) SecurityUtils.getSubject().getPrincipal();
         Integer uid = user.getUid();
         List<Role> roles = roleService.getByUserId(uid);

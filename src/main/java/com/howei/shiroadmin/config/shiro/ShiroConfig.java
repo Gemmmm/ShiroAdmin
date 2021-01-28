@@ -18,6 +18,10 @@ import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.crazycake.shiro.IRedisManager;
+import org.crazycake.shiro.RedisCacheManager;
+import org.crazycake.shiro.RedisManager;
+import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
@@ -59,13 +63,14 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized");
 
         LinkedHashMap<String, Filter> filtersMap = new LinkedHashMap<>();
-        filtersMap.put("kickout", kickoutSessionControlFilter());
+        // filtersMap.put("kickout", kickoutSessionControlFilter());
         shiroFilterFactoryBean.setFilters(filtersMap);
 
 
         LinkedHashMap<String, String> filterLinkedHashMap = new LinkedHashMap<>();
         //配置不登陆就可以访问的资源， anon表示资源都可以匿名访问
-        filterLinkedHashMap.put("/login", "kickout,anon");
+        //filterLinkedHashMap.put("/login", "kickout,anon");
+        filterLinkedHashMap.put("/login", "anon");
         filterLinkedHashMap.put("/", "anon");
         filterLinkedHashMap.put("/public/css/**", "anon");
         filterLinkedHashMap.put("/public/js/**", "anon");
@@ -73,15 +78,16 @@ public class ShiroConfig {
         filterLinkedHashMap.put("/druid/**", "anon");
         filterLinkedHashMap.put("/favicon.ico", "anon");
 
-        filterLinkedHashMap.put("/Captcha.jpg","anon");
+        filterLinkedHashMap.put("/Captcha.jpg", "anon");
 
 
         filterLinkedHashMap.put("/logout", "logout");
         //此时访问/userInfo/del需要del权限,在自定义Realm中为用户授权。
         //filterLinkedHashMap.put("/user/del", "\"perms[\"userInfo:del\"]")
 
-        //其他资源需要认证， auth 表示需要认证才能访问
-        filterLinkedHashMap.put("/**", "kickout,user");
+        //其他资源需要认证， auth 表示需要认证才能访问 ,kickout 控制登录人数
+        //filterLinkedHashMap.put("/**", "kickout,user");
+        filterLinkedHashMap.put("/**", "user");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterLinkedHashMap);
         return shiroFilterFactoryBean;
@@ -136,7 +142,7 @@ public class ShiroConfig {
         //authorizationInfo ,在ehcache-shiro.xml中有对应的缓存的配置
         shiroRealm.setAuthorizationCacheName("authorizationCache");
         //配置自定义密码比较器
-        shiroRealm.setCredentialsMatcher(retryLimitHashedCredentialsMatcher());
+        //shiroRealm.setCredentialsMatcher(retryLimitHashedCredentialsMatcher());
         return shiroRealm;
     }
 
@@ -194,8 +200,7 @@ public class ShiroConfig {
         return factory -> {
             ErrorPage errorPage401 = new ErrorPage(HttpStatus.UNAUTHORIZED, "/unauthorized");
             ErrorPage errorPage404 = new ErrorPage(HttpStatus.NOT_FOUND, "/error404");
-            ErrorPage errorPage500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/500");
-
+            ErrorPage errorPage500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/error500");
             factory.addErrorPages(errorPage401, errorPage404, errorPage500);
         };
     }
@@ -205,7 +210,6 @@ public class ShiroConfig {
      *
      * @return
      */
-
     @Bean
     public SimpleCookie rememberMeCookie() {
         //这个参数是cookie的名称，对应前端的checkboe 的name =rememberMe
@@ -218,8 +222,6 @@ public class ShiroConfig {
         simpleCookie.setPath("/");
         //记住我bookie设置30天
         simpleCookie.setMaxAge(2592000);
-
-
         return simpleCookie;
 
     }
@@ -252,17 +254,42 @@ public class ShiroConfig {
     }
 
     /**
-     * shiro缓存管理器;
-     * 需要添加到securityManager中
-     *
-     * @return
+     * shiro缓存管理器,  需要添加到securityManager中;
+     * 方法一:ehcache缓存
      */
     @Bean
     public EhCacheManager ehCacheManager() {
+
         EhCacheManager ehCacheManager = new EhCacheManager();
         ehCacheManager.setCacheManagerConfigFile("classpath:config/ehcache-shiro.xml");
         return ehCacheManager;
     }
+
+    /**
+     * 方法二:ehcache缓存
+     *
+     * @return
+     */
+    @Bean
+    public RedisCacheManager cacheManager() {
+        RedisCacheManager redisCacheManager = new RedisCacheManager();
+        redisCacheManager.setRedisManager(redisManager());
+        //用户中针对不同用户缓存
+        redisCacheManager.setPrincipalIdFieldName("username");
+        //用户权限信息缓存时间
+        redisCacheManager.setExpire(200000);
+        return redisCacheManager;
+    }
+
+    @Bean
+    public RedisManager redisManager() {
+        RedisManager redisManager = new RedisManager();
+        redisManager.setHost("127.0.0.1");
+        redisManager.setPort(6379);
+        redisManager.setPassword("12345");
+        return redisManager;
+    }
+
 
     /**
      * 让某个实例的某个方法的返回值注入为Bean的实例
@@ -309,13 +336,21 @@ public class ShiroConfig {
      */
     @Bean
     public SessionDAO sessionDAO() {
-        EnterpriseCacheSessionDAO enterpriseCacheSessionDAO = new EnterpriseCacheSessionDAO();
-        //使用ehcacheManager
-        enterpriseCacheSessionDAO.setCacheManager(ehCacheManager());
-        enterpriseCacheSessionDAO.setActiveSessionsCacheName("shiro-activeSessionCache");
-        //sessionId生成器
-        enterpriseCacheSessionDAO.setSessionIdGenerator(sessionIdGenerator());
-        return enterpriseCacheSessionDAO;
+//        //方法一, ehcahe缓存
+//        EnterpriseCacheSessionDAO enterpriseCacheSessionDAO = new EnterpriseCacheSessionDAO();
+//        //使用ehcacheManager
+//        enterpriseCacheSessionDAO.setCacheManager(ehCacheManager());
+//        enterpriseCacheSessionDAO.setActiveSessionsCacheName("shiro-activeSessionCache");
+//        //sessionId生成器
+//        enterpriseCacheSessionDAO.setSessionIdGenerator(sessionIdGenerator());
+//        return enterpriseCacheSessionDAO;
+
+        //方法二:redis缓存
+        RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
+        redisSessionDAO.setRedisManager(redisManager());
+        //session在redis中的保存时间,最好大于session会话超时时间
+        redisSessionDAO.setExpire(12000);
+        return redisSessionDAO;
     }
 
     /**
@@ -367,41 +402,44 @@ public class ShiroConfig {
         sessionManager.setSessionIdUrlRewritingEnabled(false);
         return sessionManager;
     }
-    //并发登录控制
 
-    @Bean
-    public KickoutSessionControlFilter kickoutSessionControlFilter() {
-
-        KickoutSessionControlFilter kickoutSessionControlFilter = new KickoutSessionControlFilter();
-        //用于根据会话Id获取会话进行踢出操作
-        kickoutSessionControlFilter.setSessionManager(sessionManager());
-        //使用cacheManager获取相应的cache来缓存用户登录的会话,用于保存用户-会话之间的关系
-        kickoutSessionControlFilter.setCacheManager(ehCacheManager());
-        //时候踢出后来的登录的用户,默认为false
-        kickoutSessionControlFilter.setKickoutAfter(false);
-        //同一个用户的最大会话数,
-        kickoutSessionControlFilter.setMaxSession(1);
-        //被踢出之后的重定向地址
-        kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
-        return kickoutSessionControlFilter;
-    }
+    /**
+     *
+     并发登录控制
+     */
+//    @Bean
+//    public KickoutSessionControlFilter kickoutSessionControlFilter() {
+//
+//        KickoutSessionControlFilter kickoutSessionControlFilter = new KickoutSessionControlFilter();
+//        //用于根据会话Id获取会话进行踢出操作
+//        kickoutSessionControlFilter.setSessionManager(sessionManager());
+//        //使用cacheManager获取相应的cache来缓存用户登录的会话,用于保存用户-会话之间的关系
+//        kickoutSessionControlFilter.setCacheManager(ehCacheManager());
+//        //时候踢出后来的登录的用户,默认为false
+//        kickoutSessionControlFilter.setKickoutAfter(false);
+//        //同一个用户的最大会话数,
+//        kickoutSessionControlFilter.setMaxSession(1);
+//        //被踢出之后的重定向地址
+//        kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
+//        return kickoutSessionControlFilter;
+//    }
 
     /**
      * 密码比较器
      * @return
      */
-    @Bean
-    public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
-        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
-
-        //如果密码加密,可以打开下面配置
-        //加密算法的名称
-        //retryLimitHashedCredentialsMatcher.setHashAlgorithmName("MD5");
-        //配置加密的次数
-        //retryLimitHashedCredentialsMatcher.setHashIterations(1024);
-        //是否存储为16进制
-        //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
-        return retryLimitHashedCredentialsMatcher;
-    }
+//    @Bean
+//    public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
+//        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
+//
+//        //如果密码加密,可以打开下面配置
+//        //加密算法的名称
+//        //retryLimitHashedCredentialsMatcher.setHashAlgorithmName("MD5");
+//        //配置加密的次数
+//        //retryLimitHashedCredentialsMatcher.setHashIterations(1024);
+//        //是否存储为16进制
+//        //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
+//        return retryLimitHashedCredentialsMatcher;
+//    }
 
 }
