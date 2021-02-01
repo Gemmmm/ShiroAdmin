@@ -1,6 +1,7 @@
 package com.howei.shiroadmin.config.shiro;
 
 import com.howei.shiroadmin.model.User;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.cache.Cache;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.session.Session;
@@ -9,13 +10,18 @@ import org.apache.shiro.session.mgt.SessionManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.AccessControlFilter;
 import org.apache.shiro.web.util.WebUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.servlet.resource.ResourceUrlProvider;
+import sun.rmi.runtime.Log;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.util.Deque;
 import java.util.LinkedList;
 
+@Slf4j
 public class KickoutSessionControlFilter extends AccessControlFilter {
 
     /**
@@ -32,7 +38,29 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
     private int maxSession = 1;
 
     private SessionManager sessionManager;
-    private Cache<String, Deque<Serializable>> cache;
+    //方法一
+//    private Cache<String, Deque<Serializable>> cache;
+//    public Cache<String, Deque<Serializable>> getCacheManager() {
+//        return cache;
+//    }
+//    public void setCacheManager(CacheManager cacheManager) {
+//        this.cache = cacheManager.getCache("shiro-activeSessionCache");
+//    }
+    //方法二 redis缓存
+    @Autowired
+    private ResourceUrlProvider resourceUrlProvider;
+    private RedisManager redisManager;
+    private static final String DEFAULT_KICKOUT_CACHE_KEY_PREFIX = "shiro:cache:kickout:";
+    private String keyPrefix = DEFAULT_KICKOUT_CACHE_KEY_PREFIX;
+
+
+    public RedisManager getRedisManager() {
+        return redisManager;
+    }
+
+    public void setRedisManager(RedisManager redisManager) {
+        this.redisManager = redisManager;
+    }
 
     public String getKickoutUrl() {
         return KickoutUrl;
@@ -66,13 +94,10 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
         this.sessionManager = sessionManager;
     }
 
-    public Cache<String, Deque<Serializable>> getCacheManager() {
-        return cache;
+    private String getRedisKickoutKey(String username) {
+        return this.keyPrefix + username;
     }
 
-    public void setCacheManager(CacheManager cacheManager) {
-        this.cache = cacheManager.getCache("shiro-activeSessionCache");
-    }
 
     /**
      * 是否允许访问,true为允许
@@ -103,16 +128,28 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
             //没有登录直接尽心之后的流程
             return true;
         }
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        String path = httpServletRequest.getServletPath();
+
+        if (isStaticFile(path)) {
+            return true;
+        }
         Session session = subject.getSession();
         //这里的获取的User是实体,因为在shiroRealm中的认证方法中,传的是User实体
         String username = ((User) subject.getPrincipal()).getUsername();
         Serializable sessionId = session.getId();
-        //初始化用户的队列放在缓存中
-        Deque<Serializable> deque = cache.get(username);
-        if (deque == null) {
+        //方法一:ehcache缓存
+        // 初始化用户的队列放在缓存中
+//        Deque<Serializable> deque = cache.get(username);
+        //方法二:redis缓存
+        Deque<Serializable> deque = (Deque<Serializable>) redisManager.get(getRedisKickoutKey(username));
+
+
+        if (deque == null || deque.size() == 0) {
             deque = new LinkedList<>();
-            cache.put(username, deque);
         }
+
+
         //如果队列中没有此sessionId却用户没有推出,放入队列
         if (!deque.contains(sessionId) && session.getAttribute("kickout") == null) {
             deque.push(sessionId);
@@ -135,6 +172,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
 
                 }
             } catch (Exception e) {
+                log.error(e.toString());
             }
 
         }
@@ -144,11 +182,17 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
                 subject.logout();
             } catch (Exception e) {
 
+                log.error(e.toString());
             }
             WebUtils.issueRedirect(request, response, KickoutUrl);
             return false;
         }
         return true;
 
+    }
+
+    private boolean isStaticFile(String path) {
+        String forLookupPath = resourceUrlProvider.getForLookupPath(path);
+        return forLookupPath != null;
     }
 }

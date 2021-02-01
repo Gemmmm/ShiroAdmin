@@ -63,7 +63,7 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized");
 
         LinkedHashMap<String, Filter> filtersMap = new LinkedHashMap<>();
-        // filtersMap.put("kickout", kickoutSessionControlFilter());
+        filtersMap.put("kickout", kickoutSessionControlFilter());
         shiroFilterFactoryBean.setFilters(filtersMap);
 
 
@@ -86,8 +86,8 @@ public class ShiroConfig {
         //filterLinkedHashMap.put("/user/del", "\"perms[\"userInfo:del\"]")
 
         //其他资源需要认证， auth 表示需要认证才能访问 ,kickout 控制登录人数
-        //filterLinkedHashMap.put("/**", "kickout,user");
-        filterLinkedHashMap.put("/**", "user");
+        filterLinkedHashMap.put("/**", "kickout,user");
+        //filterLinkedHashMap.put("/**", "user");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterLinkedHashMap);
         return shiroFilterFactoryBean;
@@ -407,39 +407,39 @@ public class ShiroConfig {
      *
      并发登录控制
      */
-//    @Bean
-//    public KickoutSessionControlFilter kickoutSessionControlFilter() {
-//
-//        KickoutSessionControlFilter kickoutSessionControlFilter = new KickoutSessionControlFilter();
-//        //用于根据会话Id获取会话进行踢出操作
-//        kickoutSessionControlFilter.setSessionManager(sessionManager());
-//        //使用cacheManager获取相应的cache来缓存用户登录的会话,用于保存用户-会话之间的关系
-//        kickoutSessionControlFilter.setCacheManager(ehCacheManager());
-//        //时候踢出后来的登录的用户,默认为false
-//        kickoutSessionControlFilter.setKickoutAfter(false);
-//        //同一个用户的最大会话数,
-//        kickoutSessionControlFilter.setMaxSession(1);
-//        //被踢出之后的重定向地址
-//        kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
-//        return kickoutSessionControlFilter;
-//    }
+    @Bean
+    public KickoutSessionControlFilter kickoutSessionControlFilter() {
+
+        KickoutSessionControlFilter kickoutSessionControlFilter = new KickoutSessionControlFilter();
+        //用于根据会话Id获取会话进行踢出操作
+        kickoutSessionControlFilter.setSessionManager(sessionManager());
+        //使用cacheManager获取相应的cache来缓存用户登录的会话,用于保存用户-会话之间的关系
+        kickoutSessionControlFilter.setCacheManager(ehCacheManager());
+        //时候踢出后来的登录的用户,默认为false
+        kickoutSessionControlFilter.setKickoutAfter(false);
+        //同一个用户的最大会话数,
+        kickoutSessionControlFilter.setMaxSession(1);
+        //被踢出之后的重定向地址
+        kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
+        return kickoutSessionControlFilter;
+    }
 
     /**
      * 密码比较器
      * @return
      */
-//    @Bean
-//    public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
-//        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
-//
-//        //如果密码加密,可以打开下面配置
-//        //加密算法的名称
-//        //retryLimitHashedCredentialsMatcher.setHashAlgorithmName("MD5");
-//        //配置加密的次数
-//        //retryLimitHashedCredentialsMatcher.setHashIterations(1024);
-//        //是否存储为16进制
-//        //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
-//        return retryLimitHashedCredentialsMatcher;
-//    }
+    @Bean
+    public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
+        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
+
+        //如果密码加密,可以打开下面配置
+        //加密算法的名称
+        //retryLimitHashedCredentialsMatcher.setHashAlgorithmName("MD5");
+        //配置加密的次数
+        //retryLimitHashedCredentialsMatcher.setHashIterations(1024);
+        //是否存储为16进制
+        //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
+        return retryLimitHashedCredentialsMatcher;
+    }
 
 }

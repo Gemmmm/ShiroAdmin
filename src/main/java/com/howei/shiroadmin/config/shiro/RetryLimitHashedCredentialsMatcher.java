@@ -25,12 +25,27 @@ public class RetryLimitHashedCredentialsMatcher extends SimpleCredentialsMatcher
 
     @Autowired
     private UserService userService;
+    //方法一:cache缓存
+//    private Cache<String, AtomicInteger> passwordRetryCache;
+//
+//    public RetryLimitHashedCredentialsMatcher(CacheManager cacheManager) {
+//        this.passwordRetryCache = cacheManager.getCache("passwordRetryCache");
+//    }
 
-    private Cache<String, AtomicInteger> passwordRetryCache;
+    //方法二:redis缓存
 
-    public RetryLimitHashedCredentialsMatcher(CacheManager cacheManager) {
-        this.passwordRetryCache = cacheManager.getCache("passwordRetryCache");
+    public static final String DEFAULT_RETRYLIMIT_CACHE_KEY_PREFIX = "shiro:cache:retrylimit";
+    private String keyPrefix = DEFAULT_RETRYLIMIT_CACHE_KEY_PREFIX;
+    private RedisManager redisManager;
+
+    public void setRedisManager(RedisManager redisManager) {
+        this.redisManager = redisManager;
     }
+
+    private String getRedisKickoutKey(String username) {
+        return this.keyPrefix + username;
+    }
+
 
     @Override
     public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
@@ -38,11 +53,15 @@ public class RetryLimitHashedCredentialsMatcher extends SimpleCredentialsMatcher
         //获取用户名
         String username = (String) token.getPrincipal();
         //获取用户登录次数
-        AtomicInteger retryCount = passwordRetryCache.get(username);
+        //方法一:
+        //AtomicInteger retryCount = passwordRetryCache.get(username);
+        //方法二
+        AtomicInteger retryCount = (AtomicInteger) redisManager.get(getRedisKickoutKey(username));
+
         if (retryCount == null) {
             //弱国用户没有登录过,登录次数jiayi,并放入缓存
             retryCount = new AtomicInteger(0);
-            passwordRetryCache.put(username, retryCount);
+            // passwordRetryCache.put(username, retryCount);
         }
         if (retryCount.incrementAndGet() > 5) {
             User user = userService.getByUsername(username);
@@ -53,11 +72,17 @@ public class RetryLimitHashedCredentialsMatcher extends SimpleCredentialsMatcher
             log.info("锁定账户" + user.getUsername());
             throw new LockedAccountException();
         }
+        //判断账号密码是否正确
         boolean match = super.doCredentialsMatch(token, info);
         if (match) {
             //如果正确,从缓存中国将用户登录计数清除
-            passwordRetryCache.remove(username);
+            //passwordRetryCache.remove(username);
+            redisManager.del(getRedisKickoutKey(username));
+        } else {
+            redisManager.set(getRedisKickoutKey(username), retryCount.incrementAndGet());
         }
+
+
         return match;
     }
 
@@ -71,7 +96,8 @@ public class RetryLimitHashedCredentialsMatcher extends SimpleCredentialsMatcher
         if (user != null) {
             user.setState("0");
             userService.update(user);
-            passwordRetryCache.remove(username);
+            //passwordRetryCache.remove(username);
+            redisManager.del(getRedisKickoutKey(username));
         }
     }
 }
