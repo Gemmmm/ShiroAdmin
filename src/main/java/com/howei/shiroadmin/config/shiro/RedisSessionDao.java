@@ -29,10 +29,20 @@ public class RedisSessionDao extends AbstractSessionDAO {
 
     @Override
     public void update(Session session) throws UnknownSessionException {
+        //如果会话过期，则不更新
         try {
 
             if (session instanceof ValidatingSession && !((ValidatingSession) session).isValid()) {
                 return;
+            }
+            if(session instanceof ShiroSession){
+                ShiroSession ss= (ShiroSession) session;
+                //session除LastAccessTime上次访问时间以外的其他值没有变化
+                if(!ss.isChanged()){
+                    return;
+                }
+                //如果没有return,证明有调用setAttrivute向redis放的时候永远设置为false
+                ss.setChanged(false);
             }
             this.saveSession(session);
         } catch (Exception e) {

@@ -349,7 +349,7 @@ public class ShiroConfig {
         RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
         redisSessionDAO.setRedisManager(redisManager());
         //session在redis中的保存时间,最好大于session会话超时时间
-        redisSessionDAO.setExpire(12000);
+        redisSessionDAO.setExpire(8*60*60000);
         return redisSessionDAO;
     }
 
@@ -372,15 +372,21 @@ public class ShiroConfig {
         return simpleCookie;
     }
 
+
+    @Bean("sessionFactory")
+    public ShiroSessionFactory sessionFactory(){
+        ShiroSessionFactory shiroSessionFactory=new ShiroSessionFactory();
+        return shiroSessionFactory;
+    }
+
     /**
      * 配置会话管理器,设定会话超时及保存
      *
      * @return
      */
-
     @Bean("sessionManager")
     public SessionManager sessionManager() {
-        DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
+        ShiroSessionManager sessionManager = new ShiroSessionManager();
         Collection<SessionListener> listeners = new ArrayList<>();
         listeners.add(sessionListener());
         sessionManager.setSessionIdCookie(sessionIdCookie());
@@ -388,7 +394,7 @@ public class ShiroConfig {
         sessionManager.setCacheManager(ehCacheManager());
 
         //全局会话超时时间（单位毫秒），默认30分钟  暂时设置为10秒钟 用来测试
-        sessionManager.setGlobalSessionTimeout(10000);
+        sessionManager.setGlobalSessionTimeout(8*60*60000);
         //是否开启删除无效的session对象  默认为true
         sessionManager.setDeleteInvalidSessions(true);
         //是否开启定时调度器进行检测过期session 默认为true
@@ -396,10 +402,12 @@ public class ShiroConfig {
         //设置session失效的扫描时间, 清理用户直接关闭浏览器造成的孤立会话 默认为 1个小时
         //设置该属性 就不需要设置 ExecutorServiceSessionValidationScheduler 底层也是默认自动调用ExecutorServiceSessionValidationScheduler
         //暂时设置为 5秒 用来测试
-
-        sessionManager.setSessionValidationInterval(5000);
+        sessionManager.setSessionValidationInterval(60*60000);
         //取消url后面的JessionId
         sessionManager.setSessionIdUrlRewritingEnabled(false);
+
+
+        sessionManager.setSessionFactory(sessionFactory());
         return sessionManager;
     }
 
@@ -441,5 +449,8 @@ public class ShiroConfig {
         //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return retryLimitHashedCredentialsMatcher;
     }*/
+
+
+
 
 }
