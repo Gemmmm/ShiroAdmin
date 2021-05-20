@@ -48,10 +48,10 @@ public class LoginController {
         Subject subject = SecurityUtils.getSubject();
         String sessionCaptcha= (String) subject.getSession().getAttribute(CaptchaController.KEY_CAPTCHA);
 
-        if(captcha==null||"".equals(captcha)||!captcha.equalsIgnoreCase(sessionCaptcha)){
-            model.addAttribute("msg","验证码错误！");
-            return "login";
-        }
+//        if(captcha==null||"".equals(captcha)||!captcha.equalsIgnoreCase(sessionCaptcha)){
+//            model.addAttribute("msg","验证码错误！");
+//            return "login";
+//        }
         UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(username, password, rememberMe);
 
         try {

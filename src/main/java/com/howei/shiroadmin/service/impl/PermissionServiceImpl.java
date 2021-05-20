@@ -13,7 +13,7 @@ import java.util.List;
 public class PermissionServiceImpl implements PermissionService {
 
 
-    @Autowired(required = false)
+    @Autowired
     private PermissionMapper mapper;
 
     @Override

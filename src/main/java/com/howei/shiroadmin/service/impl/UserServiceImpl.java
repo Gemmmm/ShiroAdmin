@@ -6,13 +6,14 @@ import com.howei.shiroadmin.model.UserExample;
 import com.howei.shiroadmin.model.UserExample.Criteria;
 import com.howei.shiroadmin.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
-    @Autowired(required = false)
+    @Autowired
     private UserMapper mapper;
 
     @Override
@@ -48,6 +49,7 @@ public class UserServiceImpl implements UserService {
         UserExample example = new UserExample();
         Criteria criteria = example.createCriteria();
         criteria.andUsernameEqualTo(username);
+        System.out.println(username);
         List<User> list = mapper.selectByExample(example);
         if (list != null && list.size() > 0) {
             return list.get(0);

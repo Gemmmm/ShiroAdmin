@@ -3,8 +3,10 @@ package com.howei.shiroadmin.dao;
 import com.howei.shiroadmin.model.RolePermission;
 import com.howei.shiroadmin.model.RolePermissionExample;
 import java.util.List;
-import org.apache.ibatis.annotations.Param;
 
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+@Mapper
 public interface RolePermissionMapper {
     int countByExample(RolePermissionExample example);
 

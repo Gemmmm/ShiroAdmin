@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 public class RolePermissionServiceImpl implements RolePermissionService {
 
 
-    @Autowired(required = false)
+    @Autowired
     private RolePermissionMapper mapper;
 
     @Override

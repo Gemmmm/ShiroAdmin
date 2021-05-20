@@ -12,7 +12,7 @@ import java.util.List;
 public class RoleServiceImpl implements RoleService {
 
 
-    @Autowired(required = false)
+    @Autowired
     private RoleMapper mapper;
 
     @Override

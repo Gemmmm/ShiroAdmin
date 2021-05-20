@@ -63,7 +63,7 @@ public class ShiroConfig {
         shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized");
 
         LinkedHashMap<String, Filter> filtersMap = new LinkedHashMap<>();
-        filtersMap.put("kickout", kickoutSessionControlFilter());
+        //filtersMap.put("kickout", kickoutSessionControlFilter());
         shiroFilterFactoryBean.setFilters(filtersMap);
 
 
@@ -86,8 +86,8 @@ public class ShiroConfig {
         //filterLinkedHashMap.put("/user/del", "\"perms[\"userInfo:del\"]")
 
         //其他资源需要认证， auth 表示需要认证才能访问 ,kickout 控制登录人数
-        filterLinkedHashMap.put("/**", "kickout,user");
-        //filterLinkedHashMap.put("/**", "user");
+        //filterLinkedHashMap.put("/**", "kickout,user");
+        filterLinkedHashMap.put("/**", "user");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterLinkedHashMap);
         return shiroFilterFactoryBean;
@@ -407,7 +407,7 @@ public class ShiroConfig {
      *
      并发登录控制
      */
-    @Bean
+   /* @Bean
     public KickoutSessionControlFilter kickoutSessionControlFilter() {
 
         KickoutSessionControlFilter kickoutSessionControlFilter = new KickoutSessionControlFilter();
@@ -422,13 +422,13 @@ public class ShiroConfig {
         //被踢出之后的重定向地址
         kickoutSessionControlFilter.setKickoutUrl("/login?kickout=1");
         return kickoutSessionControlFilter;
-    }
+    }*/
 
     /**
      * 密码比较器
      * @return
      */
-    @Bean
+  /*  @Bean
     public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
         RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
 
@@ -440,6 +440,6 @@ public class ShiroConfig {
         //是否存储为16进制
         //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return retryLimitHashedCredentialsMatcher;
-    }
+    }*/
 
 }

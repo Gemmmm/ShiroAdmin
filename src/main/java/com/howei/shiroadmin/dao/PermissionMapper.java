@@ -5,8 +5,9 @@ import com.howei.shiroadmin.model.PermissionExample;
 import java.util.List;
 
 import com.howei.shiroadmin.model.Role;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-
+@Mapper
 public interface PermissionMapper {
     int countByExample(PermissionExample example);
 
