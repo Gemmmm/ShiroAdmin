@@ -33,7 +33,6 @@ public class RetryLimitHashedCredentialsMatcher extends SimpleCredentialsMatcher
 //    }
 
     //方法二:redis缓存
-
     public static final String DEFAULT_RETRYLIMIT_CACHE_KEY_PREFIX = "shiro:cache:retrylimit";
     private String keyPrefix = DEFAULT_RETRYLIMIT_CACHE_KEY_PREFIX;
     private RedisManager redisManager;

@@ -114,3 +114,17 @@ CREATE TABLE `user_role` (
 -- ----------------------------
 INSERT INTO `user_role` VALUES ('1', '1');
 INSERT INTO `user_role` VALUES ('2', '2');
+
+
+
+DROP TABLE IF EXISTS `oauth2_client`;
+CREATE TABLE `oauth2_client` (
+ `id` bigint(20) NOT NULL AUTO_INCREMENT,
+ `client_name` varchar(100) DEFAULT NULL COMMENT '客戶端名稱',
+ `client_id` varchar(100) DEFAULT NULL COMMENT '客戶端ID',
+ `client_secret` varchar(100) DEFAULT NULL COMMENT '客户端安全key',
+ PRIMARY KEY (`id`),
+ KEY `idx_oauth2_client_client_id` (`client_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+
+insert into oauth2_client values(1,'oauth-client','c1ebe466-1cdc-4bd3-ab69-77c3561b9dee','d8346ea2-6017-43ed-ad68-19c0f971738b');

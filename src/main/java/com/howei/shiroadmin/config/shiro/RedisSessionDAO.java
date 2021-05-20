@@ -14,7 +14,7 @@ import java.io.Serializable;
 import java.util.*;
 
 @Slf4j
-public class RedisSessionDao extends AbstractSessionDAO {
+public class RedisSessionDAO extends AbstractSessionDAO {
 
     private static final String DEFAULT_SESSION_KEY_PREFIX = "shiro:session:";
     private String keyPrefix = DEFAULT_SESSION_KEY_PREFIX;

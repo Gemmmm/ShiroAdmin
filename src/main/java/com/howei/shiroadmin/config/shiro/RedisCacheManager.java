@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 @Slf4j
 public class RedisCacheManager implements CacheManager {
     private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<>();
-    private RedisManager redisMnager;
+    private RedisManager redisManager;
     private static final int DEFAULT_EXPIRE = 1800;
     private int expire = DEFAULT_EXPIRE;
     public static final String DEFAULT_CACHE_KEY_PREFIX = "shiro:cache";
@@ -25,18 +25,18 @@ public class RedisCacheManager implements CacheManager {
         log.debug("get cache ,name ={}", name);
         Cache cache = caches.get(name);
         if (cache == null) {
-            cache = new RedisCache<K, V>(redisMnager, keyPrefix + name + ":", expire, principalIdFieldName);
+            cache = new RedisCache<K, V>(redisManager, keyPrefix + name + ":", expire, principalIdFieldName);
             caches.put(name, cache);
         }
         return cache;
     }
 
     public RedisManager getRedisMnager() {
-        return redisMnager;
+        return redisManager;
     }
 
     public void setRedisMnager(RedisManager redisMnager) {
-        this.redisMnager = redisMnager;
+        this.redisManager = redisMnager;
     }
 
     public int getExpire() {
@@ -61,5 +61,13 @@ public class RedisCacheManager implements CacheManager {
 
     public void setPrincipalIdFieldName(String principalIdFieldName) {
         this.principalIdFieldName = principalIdFieldName;
+    }
+
+    public void setRedisManager(RedisManager redisManager) {
+        this.redisManager=redisManager;
+    }
+
+    public RedisManager getRedisManager() {
+        return redisManager;
     }
 }

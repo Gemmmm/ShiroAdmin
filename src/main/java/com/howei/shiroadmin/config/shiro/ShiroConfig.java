@@ -5,7 +5,6 @@ import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.session.SessionListener;
 import org.apache.shiro.session.mgt.SessionManager;
-import org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO;
 import org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator;
 import org.apache.shiro.session.mgt.eis.SessionDAO;
 import org.apache.shiro.session.mgt.eis.SessionIdGenerator;
@@ -17,11 +16,6 @@ import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
-import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
-import org.crazycake.shiro.IRedisManager;
-import org.crazycake.shiro.RedisCacheManager;
-import org.crazycake.shiro.RedisManager;
-import org.crazycake.shiro.RedisSessionDAO;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean;
 import org.springframework.boot.web.server.ConfigurableWebServerFactory;
@@ -284,9 +278,6 @@ public class ShiroConfig {
     @Bean
     public RedisManager redisManager() {
         RedisManager redisManager = new RedisManager();
-        redisManager.setHost("127.0.0.1");
-        redisManager.setPort(6379);
-        redisManager.setPassword("12345");
         return redisManager;
     }
 
@@ -328,7 +319,7 @@ public class ShiroConfig {
     }
 
     /**
-     * Session的作用是为session提供crud并进行持久化的一个shiro组件
+     * SessionDAO的作用是为session提供crud并进行持久化的一个shiro组件
      * Memory SessionDao直接在内润中进行会话维护
      * EnterpriseCacheSessionDao提供了缓存功能的会话维护,默认情况下使用MapCacha使用
      *
@@ -436,10 +427,10 @@ public class ShiroConfig {
      * 密码比较器
      * @return
      */
-  /*  @Bean
+    @Bean("credentialsMatcher")
     public RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher() {
-        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher(ehCacheManager());
-
+        RetryLimitHashedCredentialsMatcher retryLimitHashedCredentialsMatcher = new RetryLimitHashedCredentialsMatcher();
+        retryLimitHashedCredentialsMatcher.setRedisManager(redisManager());
         //如果密码加密,可以打开下面配置
         //加密算法的名称
         //retryLimitHashedCredentialsMatcher.setHashAlgorithmName("MD5");
@@ -448,7 +439,7 @@ public class ShiroConfig {
         //是否存储为16进制
         //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return retryLimitHashedCredentialsMatcher;
-    }*/
+    }
 
 
 
