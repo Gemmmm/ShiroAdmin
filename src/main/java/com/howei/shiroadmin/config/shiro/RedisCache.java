@@ -6,8 +6,6 @@ import org.apache.shiro.cache.CacheException;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.CollectionUtils;
 import org.crazycake.shiro.RedisCacheManager;
-import org.crazycake.shiro.exception.PrincipalIdNullException;
-import org.crazycake.shiro.exception.PrincipalInstanceException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

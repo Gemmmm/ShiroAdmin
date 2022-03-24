@@ -90,7 +90,6 @@ public class ShiroConfig {
     /**
      * 配置核心安全事务管理其
      *
-     * @param shiroRealm
      * @return
      */
     @Bean("securityManager")
@@ -101,7 +100,7 @@ public class ShiroConfig {
         //配置记住我
         securityManager.setRememberMeManager(rememberMeManager());
         //配置ehchache缓存管理
-        securityManager.setCacheManager(ehCacheManager());
+        securityManager.setCacheManager(cacheManager());
         //配置自定义session管理,使用ehcache或者redis
         securityManager.setSessionManager(sessionManager());
 
@@ -251,13 +250,13 @@ public class ShiroConfig {
      * shiro缓存管理器,  需要添加到securityManager中;
      * 方法一:ehcache缓存
      */
-    @Bean
+  /*  @Bean
     public EhCacheManager ehCacheManager() {
 
         EhCacheManager ehCacheManager = new EhCacheManager();
         ehCacheManager.setCacheManagerConfigFile("classpath:config/ehcache-shiro.xml");
         return ehCacheManager;
-    }
+    }*/
 
     /**
      * 方法二:ehcache缓存
@@ -303,7 +302,7 @@ public class ShiroConfig {
     /**
      * @return 配置session监听
      */
-    @Bean
+    @Bean("sessionListener")
     public ShiroSessionListener sessionListener() {
         return new ShiroSessionListener();
     }
@@ -340,7 +339,7 @@ public class ShiroConfig {
         RedisSessionDAO redisSessionDAO = new RedisSessionDAO();
         redisSessionDAO.setRedisManager(redisManager());
         //session在redis中的保存时间,最好大于session会话超时时间
-        redisSessionDAO.setExpire(8*60*60000);
+        redisSessionDAO.setExpire(8 * 60 * 60000);
         return redisSessionDAO;
     }
 
@@ -365,8 +364,8 @@ public class ShiroConfig {
 
 
     @Bean("sessionFactory")
-    public ShiroSessionFactory sessionFactory(){
-        ShiroSessionFactory shiroSessionFactory=new ShiroSessionFactory();
+    public ShiroSessionFactory sessionFactory() {
+        ShiroSessionFactory shiroSessionFactory = new ShiroSessionFactory();
         return shiroSessionFactory;
     }
 
@@ -379,13 +378,15 @@ public class ShiroConfig {
     public SessionManager sessionManager() {
         ShiroSessionManager sessionManager = new ShiroSessionManager();
         Collection<SessionListener> listeners = new ArrayList<>();
+        //配置监听
         listeners.add(sessionListener());
+        sessionManager.setSessionListeners(listeners);
         sessionManager.setSessionIdCookie(sessionIdCookie());
         sessionManager.setSessionDAO(sessionDAO());
-        sessionManager.setCacheManager(ehCacheManager());
+        sessionManager.setCacheManager(cacheManager());
 
         //全局会话超时时间（单位毫秒），默认30分钟  暂时设置为10秒钟 用来测试
-        sessionManager.setGlobalSessionTimeout(8*60*60000);
+        sessionManager.setGlobalSessionTimeout(8 * 60 * 60000);
         //是否开启删除无效的session对象  默认为true
         sessionManager.setDeleteInvalidSessions(true);
         //是否开启定时调度器进行检测过期session 默认为true
@@ -393,7 +394,7 @@ public class ShiroConfig {
         //设置session失效的扫描时间, 清理用户直接关闭浏览器造成的孤立会话 默认为 1个小时
         //设置该属性 就不需要设置 ExecutorServiceSessionValidationScheduler 底层也是默认自动调用ExecutorServiceSessionValidationScheduler
         //暂时设置为 5秒 用来测试
-        sessionManager.setSessionValidationInterval(60*60000);
+        sessionManager.setSessionValidationInterval(60 * 60000);
         //取消url后面的JessionId
         sessionManager.setSessionIdUrlRewritingEnabled(false);
 
@@ -425,6 +426,7 @@ public class ShiroConfig {
 
     /**
      * 密码比较器
+     *
      * @return
      */
     @Bean("credentialsMatcher")
@@ -440,8 +442,6 @@ public class ShiroConfig {
         //retryLimitHashedCredentialsMatcher.setStoredCredentialsHexEncoded(true);
         return retryLimitHashedCredentialsMatcher;
     }
-
-
 
 
 }

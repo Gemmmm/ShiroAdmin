@@ -93,15 +93,20 @@ public class ShiroRealm extends AuthorizingRealm {
         Integer uid = user.getUid();
         List<Role> roles = roleService.getByUserId(uid);
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
-        for (Role role : roles) {
-            //添加角色
-            authorizationInfo.addRole(role.getRole());
-            List<Permission> permissions = permissionService.getByRoleId(role.getId());
-            //添加权限
-            for (Permission permission : permissions) {
-                authorizationInfo.addStringPermission(permission.getPermission());
+        if (roles != null && roles.size() > 0) {
+            for (Role role : roles) {
+                //添加角色
+                authorizationInfo.addRole(role.getRole());
+                List<Permission> permissions = permissionService.getByRoleId(role.getId());
+                if (permissions != null && permissions.size() > 0) {
+                    //添加权限
+                    for (Permission permission : permissions) {
+                        authorizationInfo.addStringPermission(permission.getPermission());
+                    }
+                }
             }
         }
+
         return authorizationInfo;
     }
 
